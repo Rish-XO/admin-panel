@@ -5,7 +5,7 @@ const ejsMate = require("ejs-mate");
 const path = require("path");
 const mongoose = require("mongoose");
 
-const User = require('./models/user')
+const User = require("./models/user");
 
 const app = express();
 
@@ -30,22 +30,56 @@ const sessionConfig = {
 app.use(session(sessionConfig));
 
 //  all the get request and render the ejs pages
-app.get('/', (req, res) => {
-   res.render('home')
-})
+app.get("/", (req, res) => {
+  res.render("home");
+});
 
-app.get('/login',(req, res) => {
-    res.render('login')
-})
-app.get('/register',(req, res) => {
-    res.render('register') 
-})
+app.get("/peoples", (req, res) => {
+  if (!req.session.user_id) {
+    return res.redirect("/login");
+  }
+  res.render("peoples");
+});
 
- app.post('/register', async (req, res) => {
-    const { username, password, usertype} = req.body;
-    console.log(username, password, usertype);
- })
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+// all the post requests
+app.post("/register", async (req, res) => {
+  const { username, password, usertype } = req.body;
+  const hash = await bcrypt.hash(password, 12);
+  const user = new User({
+    username,
+    password: hash,
+    role: usertype,
+  });
+  await user.save();
+  console.log(user);
+  req.session.user_id = user._id;
+  res.redirect("/peoples");
+});
+
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+  const user = await User.findOne({ username });
+  const validatePswrd = await bcrypt.compare(password, user.password);
+  if(validatePswrd){
+    req.session.user_id = user._id;
+    res.redirect('/peoples')
+  } else {
+    res.redirect('login')
+  }
+});
+
+app.post('/', (req, res) => {
+    req.session.user_id = null;
+    res.redirect("/")
+})
 
 app.listen(3000, () => {
-    console.log('listening on port 3000');
-})
+  console.log("listening on port 3000");
+});
