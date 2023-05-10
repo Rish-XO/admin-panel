@@ -8,11 +8,19 @@
 </head>
 <body>
     <h1>peoples</h1>
+<% if(role === "admin") {%>
 <% for(let user of users) { %>
 <ul>
-    <li><%= user.username %></li>
+    <li><%= user.username %> == <%= user.role %></li> 
+    <a href="/<%=user._id%>/edit">Edit</a>
 </ul>
 <% } %>
+<% } else { %>
+    <ul>
+        <li><%= who.username %> == <%= role %></li>
+    </ul>
+<% } %>
+
 
     <form action="/" method="post">
         <button>Logout</button>

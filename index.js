@@ -39,7 +39,9 @@ app.get("/peoples", async (req, res) => {
     return res.redirect("/login");
   }
   const users = await User.find({});
-  res.render("peoples", {users});
+  const who = await User.findById( req.session.user_id )
+  const role = who.role;
+  res.render("peoples", {users, role, who});
 });
 
 app.get("/login", (req, res) => {
