@@ -34,11 +34,12 @@ app.get("/", (req, res) => {
   res.render("home");
 });
 
-app.get("/peoples", (req, res) => {
+app.get("/peoples", async (req, res) => {
   if (!req.session.user_id) {
     return res.redirect("/login");
   }
-  res.render("peoples");
+  const users = await User.find({});
+  res.render("peoples", {users});
 });
 
 app.get("/login", (req, res) => {

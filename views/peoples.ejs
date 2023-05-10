@@ -8,6 +8,12 @@
 </head>
 <body>
     <h1>peoples</h1>
+<% for(let user of users) { %>
+<ul>
+    <li><%= user.username %></li>
+</ul>
+<% } %>
+
     <form action="/" method="post">
         <button>Logout</button>
     </form>
