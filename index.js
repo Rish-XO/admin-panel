@@ -3,6 +3,7 @@ const session = require("express-session");
 const bcrypt = require("bcrypt");
 const ejsMate = require("ejs-mate");
 const path = require("path");
+const methodOverride = require("method-override");
 const mongoose = require("mongoose");
 
 const User = require("./models/user");
@@ -12,10 +13,14 @@ const app = express();
 mongoose.set("strictQuery", false);
 mongoose.connect("mongodb://127.0.0.1:27017/admimPanel");
 
+app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", "views");
 
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride("_method"));
+app.use(express.static(path.join(__dirname, "public")));
+
 const sessionConfig = {
   name: "session",
   secret: "thisshouldbeabettersecret",
@@ -47,9 +52,16 @@ app.get("/peoples", async (req, res) => {
 app.get("/login", (req, res) => {
   res.render("login");
 });
+
 app.get("/register", (req, res) => {
   res.render("register");
 });
+
+app.get("/:id/edit", async (req, res) => {
+ const { id } = req.params;
+ const user = await User.findById(id)
+ res.render('edit', {user})
+})
 
 // all the post requests
 app.post("/register", async (req, res) => {
@@ -69,18 +81,32 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   const user = await User.findOne({ username });
-  const validatePswrd = await bcrypt.compare(password, user.password);
-  if(validatePswrd){
-    req.session.user_id = user._id;
-    res.redirect('/peoples')
-  } else {
+  try {
+    const validatePswrd = await bcrypt.compare(password, user.password);
+    if(validatePswrd){
+        req.session.user_id = user._id;
+        res.redirect('/peoples')
+      } else {
+        res.redirect('login')
+      }
+  } catch (error) {
     res.redirect('login')
   }
+  
 });
 
 app.post('/', (req, res) => {
     req.session.user_id = null;
     res.redirect("/")
+})
+
+// put methods
+app.put('/:id/edit', async(req, res) =>{
+    const {id} = req.params;
+    console.log(req.body)
+    const user = await User.findByIdAndUpdate(id, {...req.body.user})
+    await user.save()
+    res.redirect(`/${user._id}/edit`)
 })
 
 app.listen(3000, () => {

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit</title>
+</head>
+<body>
+    <form action="/<%= user._id %>/edit?_method=PUT" method="POST">
+    <Label for="username">Change your name</Label>
+    <input type="text" id="username" name="user[username]" value="<%= user.username %>">
+    <button>Update</button>
+    </form>
+    <a href="/peoples"> back to peoples</a>
+</body>
+</html>
